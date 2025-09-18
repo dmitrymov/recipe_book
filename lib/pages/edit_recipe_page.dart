@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/ingredient.dart';
 import '../models/recipe.dart';
 import '../providers/recipes_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EditRecipePage extends StatefulWidget {
   final String? recipeId;
@@ -37,7 +38,7 @@ class _CategoryPickerState extends State<_CategoryPicker> {
     final categories = provider.categories;
 
     final items = [
-      const DropdownMenuItem<String>(value: '__new__', child: Text('Create new category…')),
+      DropdownMenuItem<String>(value: '__new__', child: Text(AppLocalizations.of(context)!.create_new_category)),
       ...categories.map((c) => DropdownMenuItem<String>(value: c, child: Text(c))),
     ];
 
@@ -47,13 +48,13 @@ class _CategoryPickerState extends State<_CategoryPicker> {
         DropdownButtonFormField<String>(
           value: selected,
           items: items,
-          decoration: const InputDecoration(labelText: 'Category'),
+          decoration: InputDecoration(labelText: AppLocalizations.of(context)!.category),
           onChanged: (val) {
             setState(() => selected = val);
           },
           validator: (v) {
             final value = v == '__new__' ? _newCategoryCtrl.text.trim() : (v ?? '').trim();
-            return value.isEmpty ? 'Required' : null;
+            return value.isEmpty ? AppLocalizations.of(context)!.required : null;
           },
         ),
         if (selected == '__new__')
@@ -61,12 +62,12 @@ class _CategoryPickerState extends State<_CategoryPicker> {
             padding: const EdgeInsets.only(top: 8.0),
             child: TextFormField(
               controller: _newCategoryCtrl,
-              decoration: const InputDecoration(labelText: 'New category name'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.new_category_name),
               onChanged: (v) {
                 // Also update the main controller so save reads the right value
                 widget.controller.text = v;
               },
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) => (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.required : null,
             ),
           ),
         if (selected != '__new__' && selected != null)
@@ -128,9 +129,10 @@ class _EditRecipePageState extends State<EditRecipePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.recipeId == null ? 'Create Recipe' : 'Edit Recipe'),
+        title: Text(widget.recipeId == null ? AppLocalizations.of(context)!.create_recipe_title : AppLocalizations.of(context)!.edit_recipe),
         actions: [
           IconButton(
+            tooltip: AppLocalizations.of(context)!.save,
             icon: const Icon(Icons.save_outlined),
             onPressed: () async {
               if (!_formKey.currentState!.validate()) return;
@@ -163,8 +165,8 @@ class _EditRecipePageState extends State<EditRecipePage> {
                 Expanded(
                   child: TextFormField(
                     controller: _nameCtrl,
-                    decoration: const InputDecoration(labelText: 'Name'),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.name),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.required : null,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -184,20 +186,20 @@ class _EditRecipePageState extends State<EditRecipePage> {
                     if (path != null) setState(() => imagePath = path);
                   },
                   icon: const Icon(Icons.image_outlined),
-                  label: const Text('Pick image'),
+                  label: Text(AppLocalizations.of(context)!.pick_image),
                 ),
                 const SizedBox(width: 12),
                 if (imagePath != null) Text('Selected: ${imagePath!.split('\\').last.split('/').last}'),
               ],
             ),
             const SizedBox(height: 16),
-            Text('Products', style: Theme.of(context).textTheme.titleMedium),
+            Text(AppLocalizations.of(context)!.products, style: Theme.of(context).textTheme.titleMedium),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _ingredientNameCtrl,
-                    decoration: const InputDecoration(hintText: 'Ingredient'),
+                    decoration: InputDecoration(hintText: AppLocalizations.of(context)!.ingredient),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -205,7 +207,7 @@ class _EditRecipePageState extends State<EditRecipePage> {
                   width: 140,
                   child: TextField(
                     controller: _ingredientAmountCtrl,
-                    decoration: const InputDecoration(hintText: 'Amount'),
+                    decoration: InputDecoration(hintText: AppLocalizations.of(context)!.amount),
                   ),
                 ),
                 IconButton(
@@ -235,13 +237,13 @@ class _EditRecipePageState extends State<EditRecipePage> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Steps', style: Theme.of(context).textTheme.titleMedium),
+            Text(AppLocalizations.of(context)!.steps, style: Theme.of(context).textTheme.titleMedium),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _stepCtrl,
-                    decoration: const InputDecoration(hintText: 'Add a step...'),
+                    decoration: InputDecoration(hintText: '${AppLocalizations.of(context)!.steps}...'),
                   ),
                 ),
                 IconButton(

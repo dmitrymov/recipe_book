@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../providers/recipes_provider.dart';
 import 'recipe_detail_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RecipesListPage extends StatelessWidget {
   const RecipesListPage({super.key});
@@ -21,22 +22,22 @@ class RecipesListPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             children: [
-              const Text('Sort by:'),
+              Text(AppLocalizations.of(context)!.sort),
               const SizedBox(width: 8),
               DropdownButton<RecipeSort>(
                 value: provider.sort,
                 onChanged: (v) {
                   if (v != null) provider.setSort(v);
                 },
-                items: const [
-                  DropdownMenuItem(value: RecipeSort.name, child: Text('Name')),
-                  DropdownMenuItem(value: RecipeSort.category, child: Text('Category')),
-                  DropdownMenuItem(value: RecipeSort.products, child: Text('Products count')),
+                items: [
+                  DropdownMenuItem(value: RecipeSort.name, child: Text(AppLocalizations.of(context)!.sort_by_name)),
+                  DropdownMenuItem(value: RecipeSort.category, child: Text(AppLocalizations.of(context)!.sort_by_category)),
+                  DropdownMenuItem(value: RecipeSort.products, child: Text(AppLocalizations.of(context)!.sort_by_products)),
                 ],
               ),
               const Spacer(),
               IconButton(
-                tooltip: 'Create recipe',
+                tooltip: AppLocalizations.of(context)!.create_recipe,
                 onPressed: () async {
                   Navigator.of(context).pushNamed('/edit');
                 },
@@ -65,7 +66,7 @@ class RecipesListPage extends StatelessWidget {
                       )
                     : const CircleAvatar(child: Icon(Icons.restaurant_menu)),
                 title: Text(r.name),
-                subtitle: Text('${r.category} • ${r.ingredients.length} products'),
+                subtitle: Text('${r.category} • ${r.ingredients.length} ${AppLocalizations.of(context)!.products.toLowerCase()}'),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => RecipeDetailPage(recipeId: r.id)),
                 ),

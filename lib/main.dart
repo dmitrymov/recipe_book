@@ -10,6 +10,10 @@ import 'services/recipe_store.dart';
 import 'services/premium_service.dart';
 import 'services/cloud_sync_service.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'providers/locale_provider.dart';
+
 void main() {
   runApp(const RecipeBookApp());
 }
@@ -28,9 +32,23 @@ class RecipeBookApp extends StatelessWidget {
             cloudSync: CloudSyncService(),
           ),
         ),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()..load()),
       ],
-      child: MaterialApp(
-        title: 'Recipe Book',
+      child: Consumer<LocaleProvider>(
+        builder: (context, lp, _) => MaterialApp(
+        onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.app_title,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en'),
+          Locale('fr'),
+          Locale('he'),
+        ],
+        locale: lp.locale,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
           useMaterial3: true,
@@ -50,6 +68,7 @@ class RecipeBookApp extends StatelessWidget {
           }
           return null;
         },
+      ),
       ),
     );
   }

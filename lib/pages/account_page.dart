@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/recipes_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../providers/locale_provider.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
@@ -13,14 +15,30 @@ class AccountPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Account'),
+        title: Text(AppLocalizations.of(context)!.account),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Language selector
           ListTile(
-            title: const Text('Premium'),
-            subtitle: Text(premium.isPaid ? 'Purchased' : 'Not purchased'),
+            title: Text(AppLocalizations.of(context)!.language),
+            trailing: DropdownButton<Locale?>(
+              value: context.watch<LocaleProvider>().locale,
+              hint: Text(AppLocalizations.of(context)!.system_default),
+              onChanged: (loc) => context.read<LocaleProvider>().setLocale(loc),
+              items: const [
+                DropdownMenuItem<Locale?>(value: null, child: Text('System')),
+                DropdownMenuItem<Locale?>(value: Locale('en'), child: Text('English')),
+                DropdownMenuItem<Locale?>(value: Locale('fr'), child: Text('Français')),
+                DropdownMenuItem<Locale?>(value: Locale('he'), child: Text('עברית')),
+              ],
+            ),
+          ),
+          const Divider(),
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.premium),
+            subtitle: Text(premium.isPaid ? AppLocalizations.of(context)!.premium_purchased : AppLocalizations.of(context)!.premium_not_purchased),
             trailing: ElevatedButton(
               onPressed: premium.isPaid
                   ? null
@@ -30,23 +48,23 @@ class AccountPage extends StatelessWidget {
                         const SnackBar(content: Text('Premium unlocked (stub).')),
                       );
                     },
-              child: Text(premium.isPaid ? 'Owned' : 'Buy'),
+              child: Text(premium.isPaid ? AppLocalizations.of(context)!.owned : AppLocalizations.of(context)!.buy),
             ),
           ),
           const Divider(),
           ListTile(
-            title: const Text('Sync to cloud'),
-            subtitle: const Text('Upload your recipes (premium only)'),
+            title: Text(AppLocalizations.of(context)!.sync_to_cloud),
+            subtitle: Text('${AppLocalizations.of(context)!.upload} your recipes (premium only)'),
             trailing: ElevatedButton(
               onPressed: premium.isPaid ? provider.syncToCloud : null,
-              child: const Text('Upload'),
+              child: Text(AppLocalizations.of(context)!.upload),
             ),
           ),
           ListTile(
-            title: const Text('Sync from cloud'),
+            title: Text(AppLocalizations.of(context)!.sync_from_cloud),
             trailing: ElevatedButton(
               onPressed: premium.isPaid ? provider.syncFromCloud : null,
-              child: const Text('Download'),
+              child: Text(AppLocalizations.of(context)!.download),
             ),
           ),
         ],
