@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'pages/home_tabs.dart';
 import 'pages/recipe_detail_page.dart';
 import 'pages/edit_recipe_page.dart';
+import 'pages/account_page.dart';
 import 'providers/recipes_provider.dart';
 import 'services/recipe_store.dart';
 import 'services/premium_service.dart';
@@ -43,6 +44,9 @@ class RecipeBookApp extends StatelessWidget {
           if (settings.name == '/edit') {
             final id = settings.arguments as String?;
             return MaterialPageRoute(builder: (_) => EditRecipePage(recipeId: id));
+          }
+          if (settings.name == '/account') {
+            return MaterialPageRoute(builder: (_) => const AccountPage());
           }
           return null;
         },

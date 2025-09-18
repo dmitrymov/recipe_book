@@ -13,6 +13,75 @@ class EditRecipePage extends StatefulWidget {
   State<EditRecipePage> createState() => _EditRecipePageState();
 }
 
+class _CategoryPicker extends StatefulWidget {
+  final TextEditingController controller;
+  const _CategoryPicker({required this.controller});
+
+  @override
+  State<_CategoryPicker> createState() => _CategoryPickerState();
+}
+
+class _CategoryPickerState extends State<_CategoryPicker> {
+  String? selected;
+  final _newCategoryCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _newCategoryCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<RecipesProvider>();
+    final categories = provider.categories;
+
+    final items = [
+      const DropdownMenuItem<String>(value: '__new__', child: Text('Create new category…')),
+      ...categories.map((c) => DropdownMenuItem<String>(value: c, child: Text(c))),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<String>(
+          value: selected,
+          items: items,
+          decoration: const InputDecoration(labelText: 'Category'),
+          onChanged: (val) {
+            setState(() => selected = val);
+          },
+          validator: (v) {
+            final value = v == '__new__' ? _newCategoryCtrl.text.trim() : (v ?? '').trim();
+            return value.isEmpty ? 'Required' : null;
+          },
+        ),
+        if (selected == '__new__')
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: TextFormField(
+              controller: _newCategoryCtrl,
+              decoration: const InputDecoration(labelText: 'New category name'),
+              onChanged: (v) {
+                // Also update the main controller so save reads the right value
+                widget.controller.text = v;
+              },
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+            ),
+          ),
+        if (selected != '__new__' && selected != null)
+          // keep the controller in sync with the selected category
+          Offstage(
+            offstage: true,
+            child: TextFormField(
+              controller: widget.controller..text = selected ?? '',
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class _EditRecipePageState extends State<EditRecipePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
@@ -36,6 +105,10 @@ class _EditRecipePageState extends State<EditRecipePage> {
       ingredients = List.of(r.ingredients);
       steps = List.of(r.steps);
       imagePath = r.imagePath;
+    } else {
+      // default to first category if exists
+      final cats = provider.categories;
+      if (cats.isNotEmpty) _categoryCtrl.text = cats.first;
     }
   }
 
@@ -96,10 +169,8 @@ class _EditRecipePageState extends State<EditRecipePage> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: TextFormField(
+                  child: _CategoryPicker(
                     controller: _categoryCtrl,
-                    decoration: const InputDecoration(labelText: 'Category'),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                   ),
                 ),
               ],

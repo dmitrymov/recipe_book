@@ -18,7 +18,7 @@ class RecipeStore {
 
   Box<Recipe> get _box => Hive.box<Recipe>(recipesBoxName);
 
-  List<Recipe> getAll() => _box.values.toList(growable: false);
+  List<Recipe> getAll() => _box.values.toList(growable: true);
 
   Future<void> put(Recipe recipe) async {
     await _box.put(recipe.id, recipe);

@@ -19,7 +19,7 @@ class _HomeTabsState extends State<HomeTabs> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _controller = TabController(length: 2, vsync: this);
+    _controller = TabController(length: 1, vsync: this);
     // Load data without awaiting; safe to call in initState.
     final rp = context.read<RecipesProvider>();
     rp.load();
@@ -37,6 +37,11 @@ class _HomeTabsState extends State<HomeTabs> with SingleTickerProviderStateMixin
       appBar: AppBar(
         title: const Text('Recipe Book'),
         actions: [
+          IconButton(
+            tooltip: 'Account',
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () => Navigator.of(context).pushNamed('/account'),
+          ),
           PopupMenuButton<RecipeSort>(
             tooltip: 'Sort',
             onSelected: (s) => context.read<RecipesProvider>().setSort(s),
@@ -52,7 +57,6 @@ class _HomeTabsState extends State<HomeTabs> with SingleTickerProviderStateMixin
           controller: _controller,
           tabs: const [
             Tab(icon: Icon(Icons.menu_book_outlined), text: 'Catalog'),
-            Tab(icon: Icon(Icons.settings_outlined), text: 'Settings'),
           ],
         ),
       ),
@@ -60,7 +64,6 @@ class _HomeTabsState extends State<HomeTabs> with SingleTickerProviderStateMixin
         controller: _controller,
         children: const [
           _CatalogTab(),
-          _SettingsTab(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -97,11 +100,50 @@ class _CatalogTab extends StatelessWidget {
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      itemBuilder: (context, i) {
-        final r = recipes[i];
-        return ListTile(
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Category filter
+              DropdownButton<String?>(
+                value: provider.categoryFilter,
+                hint: const Text('All categories'),
+                onChanged: (val) => provider.setCategoryFilter(val),
+                items: [
+                  const DropdownMenuItem<String?>(value: null, child: Text('All categories')),
+                  ...provider.categories.map((c) => DropdownMenuItem<String?>(value: c, child: Text(c))),
+                ],
+              ),
+              const SizedBox(width: 12),
+              // Search field
+              Expanded(
+                child: TextField(
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    isDense: true,
+                    hintText: 'Search recipes, categories, products...',
+                    suffixIcon: provider.search.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () => provider.clearSearch(),
+                          )
+                        : null,
+                  ),
+                  onChanged: provider.setSearch,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemBuilder: (context, i) {
+              final r = recipes[i];
+              return ListTile(
           leading: r.imagePath != null
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(6),
@@ -119,68 +161,12 @@ class _CatalogTab extends StatelessWidget {
           onTap: () => Navigator.of(context).pushNamed('/detail', arguments: r.id),
         );
       },
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemCount: recipes.length,
-    );
-  }
-}
-
-class _SettingsTab extends StatelessWidget {
-  const _SettingsTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Navigator(
-      onGenerateRoute: (settings) => MaterialPageRoute(
-        builder: (_) => const _SettingsInner(),
-      ),
-    );
-  }
-}
-
-class _SettingsInner extends StatelessWidget {
-  const _SettingsInner();
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<RecipesProvider>();
-    final premium = provider.premiumService;
-
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        ListTile(
-          title: const Text('Premium'),
-          subtitle: Text(premium.isPaid ? 'Purchased' : 'Not purchased'),
-          trailing: ElevatedButton(
-            onPressed: premium.isPaid
-                ? null
-                : () {
-                    context.read<RecipesProvider>().purchasePremium();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Premium unlocked (stub).')),
-                    );
-                  },
-            child: Text(premium.isPaid ? 'Owned' : 'Buy'),
-          ),
-        ),
-        const Divider(),
-        ListTile(
-          title: const Text('Sync to cloud'),
-          subtitle: const Text('Upload your recipes (premium only)'),
-          trailing: ElevatedButton(
-            onPressed: premium.isPaid ? provider.syncToCloud : null,
-            child: const Text('Upload'),
-          ),
-        ),
-        ListTile(
-          title: const Text('Sync from cloud'),
-          trailing: ElevatedButton(
-            onPressed: premium.isPaid ? provider.syncFromCloud : null,
-            child: const Text('Download'),
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemCount: recipes.length,
           ),
         ),
       ],
     );
   }
 }
+

@@ -13,6 +13,8 @@ class RecipesProvider extends ChangeNotifier {
 
   List<Recipe> _recipes = [];
   RecipeSort _sort = RecipeSort.name;
+  String _search = '';
+  String? _categoryFilter;
 
   RecipesProvider({
     required this.store,
@@ -21,7 +23,23 @@ class RecipesProvider extends ChangeNotifier {
   });
 
   List<Recipe> get recipes {
-    final list = List<Recipe>.from(_recipes);
+    var list = List<Recipe>.from(_recipes);
+
+    if (_categoryFilter != null && _categoryFilter!.isNotEmpty) {
+      list = list.where((r) => r.category == _categoryFilter).toList();
+    }
+    if (_search.isNotEmpty) {
+      final q = _search.toLowerCase();
+      list = list.where((r) {
+        final inName = r.name.toLowerCase().contains(q);
+        final inCategory = r.category.toLowerCase().contains(q);
+        final inIngredients = r.ingredients.any(
+          (i) => i.name.toLowerCase().contains(q) || i.amount.toLowerCase().contains(q),
+        );
+        return inName || inCategory || inIngredients;
+      }).toList();
+    }
+
     switch (_sort) {
       case RecipeSort.name:
         list.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -37,15 +55,38 @@ class RecipesProvider extends ChangeNotifier {
   }
 
   RecipeSort get sort => _sort;
+  String get search => _search;
+  String? get categoryFilter => _categoryFilter;
+  List<String> get categories {
+    final list = _recipes.map((r) => r.category).toSet().toList();
+    list.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return list;
+  }
 
   Future<void> load() async {
     await store.init();
-    _recipes = store.getAll();
+    // Ensure we always work with a growable list snapshot.
+    _recipes = List<Recipe>.from(store.getAll());
     notifyListeners();
   }
 
   void setSort(RecipeSort s) {
     _sort = s;
+    notifyListeners();
+  }
+
+  void setSearch(String value) {
+    _search = value;
+    notifyListeners();
+  }
+
+  void clearSearch() {
+    _search = '';
+    notifyListeners();
+  }
+
+  void setCategoryFilter(String? category) {
+    _categoryFilter = category;
     notifyListeners();
   }
 
